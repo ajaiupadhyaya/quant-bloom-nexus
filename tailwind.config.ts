@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,12 +62,29 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Bloomberg Terminal inspired colors
+				terminal: {
+					bg: '#0a0a0a',
+					panel: '#1a1a1a',
+					border: '#333333',
+					text: '#ffffff',
+					muted: '#888888',
+					orange: '#ff6b35',
+					amber: '#ffa500',
+					cyan: '#00d4ff',
+					green: '#00ff88',
+					red: '#ff4757',
 				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			fontFamily: {
+				mono: ['JetBrains Mono', 'Monaco', 'Consolas', 'monospace'],
+				sans: ['Inter', 'system-ui', 'sans-serif'],
 			},
 			keyframes: {
 				'accordion-down': {
@@ -84,11 +102,31 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-subtle': {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.8'
+					}
+				},
+				'slide-up': {
+					'0%': {
+						transform: 'translateY(10px)',
+						opacity: '0'
+					},
+					'100%': {
+						transform: 'translateY(0)',
+						opacity: '1'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
+				'slide-up': 'slide-up 0.3s ease-out'
 			}
 		}
 	},
