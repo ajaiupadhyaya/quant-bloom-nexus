@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MarketOverview } from './MarketOverview';
 import { PriceChart } from './PriceChart';
@@ -14,6 +13,11 @@ import { OptionsFlow } from './OptionsFlow';
 import { TradingInterface } from './TradingInterface';
 import { AdvancedScreener } from './AdvancedScreener';
 import { RiskManager } from './RiskManager';
+import { PortfolioAnalytics } from './PortfolioAnalytics';
+import { QuantResearch } from './QuantResearch';
+import { DerivativesTrading } from './DerivativesTrading';
+import { InstitutionalOMS } from './InstitutionalOMS';
+import { AlternativeData } from './AlternativeData';
 import { 
   Search, Terminal, BarChart, Wallet, Bell, Settings, 
   Layout, Brain, TrendingUp, Globe, Shield, Zap,
@@ -213,16 +217,16 @@ export const TradingDashboard = () => {
         </div>
       </div>
 
-      {/* Enhanced Main Dashboard Grid */}
-      <div className="grid grid-cols-16 gap-1 p-1 h-[calc(100vh-64px)] overflow-hidden">
+      {/* Enhanced Main Dashboard Grid - Now with Advanced Quant Features */}
+      <div className="grid grid-cols-20 gap-1 p-1 h-[calc(100vh-64px)] overflow-hidden">
         {/* Market Overview - Top Row */}
-        <div className="col-span-16 h-20">
+        <div className="col-span-20 h-20">
           <MarketOverview />
         </div>
 
-        {/* Left Column - Watchlist & Portfolio */}
-        <div className="col-span-3 space-y-1 overflow-hidden">
-          <div className="h-[40%]">
+        {/* Left Column - Watchlist & Portfolio Analytics */}
+        <div className="col-span-4 space-y-1 overflow-hidden">
+          <div className="h-[25%]">
             <Watchlist 
               selectedSymbol={selectedSymbol}
               onSymbolSelect={setSelectedSymbol}
@@ -231,46 +235,59 @@ export const TradingDashboard = () => {
           <div className="h-[35%]">
             <PortfolioSummary />
           </div>
-          <div className="h-[23%]">
-            <RiskManager />
+          <div className="h-[38%]">
+            <PortfolioAnalytics />
           </div>
         </div>
 
         {/* Center-Left Column - Charts & Technical Analysis */}
-        <div className="col-span-6 space-y-1">
-          <div className="h-[65%]">
+        <div className="col-span-5 space-y-1">
+          <div className="h-[60%]">
             <PriceChart symbol={selectedSymbol} />
           </div>
-          <div className="h-[33%]">
+          <div className="h-[38%]">
             <TechnicalIndicators symbol={selectedSymbol} />
           </div>
         </div>
 
-        {/* Center-Right Column - AI Analysis & Sentiment */}
+        {/* Center Column - AI Analysis & Quant Research */}
         <div className="col-span-4 space-y-1">
           <div className="h-[30%]">
             <AIMarketAnalysis symbol={selectedSymbol} />
           </div>
-          <div className="h-[25%]">
-            <SentimentAnalysis symbol={selectedSymbol} />
+          <div className="h-[35%]">
+            <QuantResearch />
           </div>
-          <div className="h-[22%]">
-            <OptionsFlow symbol={selectedSymbol} />
-          </div>
-          <div className="h-[21%]">
-            <AdvancedScreener />
+          <div className="h-[33%]">
+            <AlternativeData />
           </div>
         </div>
 
-        {/* Right Column - Trading & Order Management */}
-        <div className="col-span-3 space-y-1">
+        {/* Center-Right Column - Derivatives & Sentiment */}
+        <div className="col-span-4 space-y-1">
           <div className="h-[45%]">
-            <TradingInterface symbol={selectedSymbol} />
+            <DerivativesTrading />
+          </div>
+          <div className="h-[25%]">
+            <SentimentAnalysis symbol={selectedSymbol} />
+          </div>
+          <div className="h-[28%]">
+            <OptionsFlow symbol={selectedSymbol} />
+          </div>
+        </div>
+
+        {/* Right Column - Institutional Trading & Risk */}
+        <div className="col-span-3 space-y-1">
+          <div className="h-[35%]">
+            <InstitutionalOMS />
           </div>
           <div className="h-[30%]">
-            <OrderBook symbol={selectedSymbol} />
+            <TradingInterface symbol={selectedSymbol} />
           </div>
-          <div className="h-[23%]">
+          <div className="h-[20%]">
+            <RiskManager />
+          </div>
+          <div className="h-[13%]">
             <NewsFeed />
           </div>
         </div>
