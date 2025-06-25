@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Terminal, Bell, Settings, Layout, Shield, Monitor, Zap } from 'lucide-react';
+import { Terminal, Bell, Settings, Layout, Shield, Monitor, Zap, BarChart3 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +19,7 @@ interface HeaderBarProps {
 export const HeaderBar = ({ currentTime, notifications, layout, setLayout }: HeaderBarProps) => {
   const layouts = [
     { id: 'professional', name: 'Professional', icon: Layout },
-    { id: 'analytical', name: 'Analytical', icon: BarChart },
+    { id: 'analytical', name: 'Analytical', icon: BarChart3 },
     { id: 'compact', name: 'Compact', icon: Monitor },
   ];
 
