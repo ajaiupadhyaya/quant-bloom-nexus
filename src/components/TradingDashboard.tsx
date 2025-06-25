@@ -31,6 +31,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import { RealTimeDataPipeline } from './RealTimeDataPipeline';
+import { MLModelPipeline } from './MLModelPipeline';
+import { AdvancedCharting } from './AdvancedCharting';
+import { MarketMicrostructure } from './MarketMicrostructure';
 
 export const TradingDashboard = () => {
   const [selectedSymbol, setSelectedSymbol] = useState('AAPL');
@@ -217,78 +221,81 @@ export const TradingDashboard = () => {
         </div>
       </div>
 
-      {/* Enhanced Main Dashboard Grid - Now with Advanced Quant Features */}
-      <div className="grid grid-cols-20 gap-1 p-1 h-[calc(100vh-64px)] overflow-hidden">
+      {/* Enhanced Main Dashboard Grid - Now with Advanced Infrastructure */}
+      <div className="grid grid-cols-24 gap-1 p-1 h-[calc(100vh-64px)] overflow-hidden">
         {/* Market Overview - Top Row */}
-        <div className="col-span-20 h-20">
+        <div className="col-span-24 h-20">
           <MarketOverview />
         </div>
 
-        {/* Left Column - Watchlist & Portfolio Analytics */}
+        {/* Left Column - Data Pipeline & Infrastructure */}
         <div className="col-span-4 space-y-1 overflow-hidden">
-          <div className="h-[25%]">
+          <div className="h-[40%]">
+            <RealTimeDataPipeline />
+          </div>
+          <div className="h-[35%]">
             <Watchlist 
               selectedSymbol={selectedSymbol}
               onSymbolSelect={setSelectedSymbol}
             />
           </div>
-          <div className="h-[35%]">
-            <PortfolioSummary />
-          </div>
-          <div className="h-[38%]">
-            <PortfolioAnalytics />
+          <div className="h-[23%]">
+            <MarketMicrostructure />
           </div>
         </div>
 
-        {/* Center-Left Column - Charts & Technical Analysis */}
-        <div className="col-span-5 space-y-1">
-          <div className="h-[60%]">
-            <PriceChart symbol={selectedSymbol} />
+        {/* Center-Left Column - Advanced Charting */}
+        <div className="col-span-6 space-y-1">
+          <div className="h-[70%]">
+            <AdvancedCharting />
           </div>
-          <div className="h-[38%]">
+          <div className="h-[28%]">
             <TechnicalIndicators symbol={selectedSymbol} />
           </div>
         </div>
 
-        {/* Center Column - AI Analysis & Quant Research */}
-        <div className="col-span-4 space-y-1">
-          <div className="h-[30%]">
+        {/* Center Column - AI/ML Pipeline */}
+        <div className="col-span-5 space-y-1">
+          <div className="h-[45%]">
+            <MLModelPipeline />
+          </div>
+          <div className="h-[25%]">
             <AIMarketAnalysis symbol={selectedSymbol} />
           </div>
-          <div className="h-[35%]">
-            <QuantResearch />
-          </div>
-          <div className="h-[33%]">
+          <div className="h-[28%]">
             <AlternativeData />
           </div>
         </div>
 
-        {/* Center-Right Column - Derivatives & Sentiment */}
-        <div className="col-span-4 space-y-1">
-          <div className="h-[45%]">
-            <DerivativesTrading />
+        {/* Center-Right Column - Quant Research & Analytics */}
+        <div className="col-span-5 space-y-1">
+          <div className="h-[40%]">
+            <QuantResearch />
           </div>
-          <div className="h-[25%]">
-            <SentimentAnalysis symbol={selectedSymbol} />
+          <div className="h-[30%]">
+            <PortfolioAnalytics />
           </div>
           <div className="h-[28%]">
-            <OptionsFlow symbol={selectedSymbol} />
+            <DerivativesTrading />
           </div>
         </div>
 
         {/* Right Column - Institutional Trading & Risk */}
-        <div className="col-span-3 space-y-1">
-          <div className="h-[35%]">
+        <div className="col-span-4 space-y-1">
+          <div className="h-[25%]">
             <InstitutionalOMS />
           </div>
-          <div className="h-[30%]">
+          <div className="h-[20%]">
             <TradingInterface symbol={selectedSymbol} />
           </div>
           <div className="h-[20%]">
             <RiskManager />
           </div>
-          <div className="h-[13%]">
-            <NewsFeed />
+          <div className="h-[15%]">
+            <SentimentAnalysis symbol={selectedSymbol} />
+          </div>
+          <div className="h-[18%]">
+            <OptionsFlow symbol={selectedSymbol} />
           </div>
         </div>
       </div>
