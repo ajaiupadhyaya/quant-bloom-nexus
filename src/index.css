@@ -4,6 +4,279 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Bloomberg Terminal Custom Styles */
+:root {
+  --terminal-bg: #000000;
+  --terminal-panel: #1a1a1a;
+  --terminal-border: #ff8c00;
+  --terminal-orange: #ff8c00;
+  --terminal-amber: #ffb347;
+  --terminal-cyan: #00ffff;
+  --terminal-green: #00ff00;
+  --terminal-red: #ff0000;
+  --terminal-yellow: #ffff00;
+  --terminal-text: #ff8c00;
+  --terminal-muted: #808080;
+}
+
+/* Custom Animations */
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes glow-orange {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--terminal-orange);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--terminal-orange), 0 0 30px var(--terminal-orange);
+  }
+}
+
+@keyframes glow-cyan {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--terminal-cyan);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--terminal-cyan), 0 0 30px var(--terminal-cyan);
+  }
+}
+
+@keyframes data-stream {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Terminal-specific utility classes */
+.animate-marquee {
+  animation: marquee 60s linear infinite;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.glow-orange {
+  animation: glow-orange 2s ease-in-out infinite;
+}
+
+.glow-cyan {
+  animation: glow-cyan 2s ease-in-out infinite;
+}
+
+.data-stream {
+  animation: data-stream 3s ease-in-out infinite;
+}
+
+/* Terminal-style buttons */
+.terminal-button {
+  @apply bg-transparent border border-gray-600 text-gray-300 hover:border-orange-500 hover:text-orange-400 transition-all duration-200 px-3 py-1 rounded text-sm;
+}
+
+.terminal-button:hover {
+  box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
+}
+
+/* Terminal-style inputs */
+.terminal-input {
+  @apply bg-gray-900 border border-gray-600 text-orange-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded px-3 py-2;
+}
+
+.terminal-input:focus {
+  box-shadow: 0 0 10px rgba(255, 140, 0, 0.2);
+}
+
+/* Terminal-style cards */
+.terminal-card {
+  @apply bg-gray-900 border border-gray-700 rounded-lg;
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(0, 0, 0, 0.95) 100%);
+  backdrop-filter: blur(10px);
+}
+
+.terminal-card:hover {
+  border-color: var(--terminal-orange);
+  box-shadow: 0 0 15px rgba(255, 140, 0, 0.1);
+}
+
+/* Scrollbar styling for terminal aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff8c00;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ffb347;
+}
+
+/* Terminal-style table */
+.terminal-table {
+  @apply w-full text-sm;
+}
+
+.terminal-table th {
+  @apply bg-gray-800 text-orange-400 font-semibold px-3 py-2 text-left border-b border-gray-600;
+}
+
+.terminal-table td {
+  @apply px-3 py-2 border-b border-gray-700 text-gray-300;
+}
+
+.terminal-table tbody tr:hover {
+  @apply bg-gray-800;
+}
+
+/* Real-time data highlighting */
+.price-up {
+  @apply text-green-400;
+  animation: data-stream 1s ease-out;
+}
+
+.price-down {
+  @apply text-red-400;
+  animation: data-stream 1s ease-out;
+}
+
+.price-neutral {
+  @apply text-gray-300;
+}
+
+/* Status indicators */
+.status-connected {
+  @apply text-green-400;
+}
+
+.status-connecting {
+  @apply text-yellow-400;
+  animation: pulse-subtle 1s infinite;
+}
+
+.status-disconnected {
+  @apply text-red-400;
+}
+
+/* Terminal typography */
+.terminal-mono {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Bloomberg-style color coding */
+.bid-color {
+  color: #00ff00 !important;
+}
+
+.ask-color {
+  color: #ff0000 !important;
+}
+
+.last-color {
+  color: #ffff00 !important;
+}
+
+.volume-color {
+  color: #00ffff !important;
+}
+
+/* Enhanced terminal effects */
+.terminal-scanlines::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    transparent 50%, 
+    rgba(255, 140, 0, 0.02) 50%
+  );
+  background-size: 100% 2px;
+  pointer-events: none;
+  animation: scanlines 0.1s linear infinite;
+}
+
+@keyframes scanlines {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 2px;
+  }
+}
+
+/* Terminal grid layout */
+.terminal-grid {
+  display: grid;
+  gap: 1px;
+  background-color: var(--terminal-border);
+  padding: 1px;
+}
+
+.terminal-grid > * {
+  background-color: var(--terminal-bg);
+  min-height: 0;
+}
+
+/* Performance optimizations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Responsive terminal */
+@media (max-width: 1920px) {
+  .terminal-grid {
+    grid-template-columns: repeat(12, 1fr);
+  }
+}
+
+@media (max-width: 1280px) {
+  .terminal-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .terminal-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .animate-marquee {
+    animation-duration: 30s;
+  }
+}
+
 /* Bloomberg Terminal inspired design system */
 
 @layer base {
