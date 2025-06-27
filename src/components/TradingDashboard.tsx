@@ -213,68 +213,8 @@ export const TradingDashboard = () => {
         </div>
       </div>
 
-      {/* Enhanced Main Dashboard Grid */}
-      <div className="grid grid-cols-16 gap-1 p-1 h-[calc(100vh-64px)] overflow-hidden">
-        {/* Market Overview - Top Row */}
-        <div className="col-span-16 h-20">
-          <MarketOverview />
-        </div>
-
-        {/* Left Column - Watchlist & Portfolio */}
-        <div className="col-span-3 space-y-1 overflow-hidden">
-          <div className="h-[40%]">
-            <Watchlist 
-              selectedSymbol={selectedSymbol}
-              onSymbolSelect={setSelectedSymbol}
-            />
-          </div>
-          <div className="h-[35%]">
-            <PortfolioSummary />
-          </div>
-          <div className="h-[23%]">
-            <RiskManager />
-          </div>
-        </div>
-
-        {/* Center-Left Column - Charts & Technical Analysis */}
-        <div className="col-span-6 space-y-1">
-          <div className="h-[65%]">
-            <PriceChart symbol={selectedSymbol} />
-          </div>
-          <div className="h-[33%]">
-            <TechnicalIndicators symbol={selectedSymbol} />
-          </div>
-        </div>
-
-        {/* Center-Right Column - AI Analysis & Sentiment */}
-        <div className="col-span-4 space-y-1">
-          <div className="h-[30%]">
-            <AIMarketAnalysis symbol={selectedSymbol} />
-          </div>
-          <div className="h-[25%]">
-            <SentimentAnalysis symbol={selectedSymbol} />
-          </div>
-          <div className="h-[22%]">
-            <OptionsFlow symbol={selectedSymbol} />
-          </div>
-          <div className="h-[21%]">
-            <AdvancedScreener />
-          </div>
-        </div>
-
-        {/* Right Column - Trading & Order Management */}
-        <div className="col-span-3 space-y-1">
-          <div className="h-[45%]">
-            <TradingInterface symbol={selectedSymbol} />
-          </div>
-          <div className="h-[30%]">
-            <OrderBook symbol={selectedSymbol} />
-          </div>
-          <div className="h-[23%]">
-            <NewsFeed />
-          </div>
-        </div>
-      </div>
+      {/* Main Dashboard Grid */}
+      <DashboardGrid selectedSymbol={selectedSymbol} onSymbolSelect={setSelectedSymbol} />
 
       {/* Command Palette */}
       {showCommandPalette && (

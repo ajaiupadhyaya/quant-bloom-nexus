@@ -1,159 +1,106 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, Command, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { Command as CommandPrimitive } from 'cmdk';
+import { 
+    File, 
+    Search, 
+    LayoutDashboard, 
+    Briefcase, 
+    ArrowRight, 
+    BarChart2 
+} from 'lucide-react';
+
+// Mock stock data - in a real app, this would come from an API
+const stockTickers = [
+    { symbol: 'AAPL', name: 'Apple Inc.' },
+    { symbol: 'MSFT', name: 'Microsoft Corp.' },
+    { symbol: 'GOOGL', name: 'Alphabet Inc.' },
+    { symbol: 'AMZN', name: 'Amazon.com, Inc.' },
+    { symbol: 'TSLA', name: 'Tesla, Inc.' },
+    { symbol: 'NVDA', name: 'NVIDIA Corp.' },
+    { symbol: 'META', name: 'Meta Platforms, Inc.' },
+];
 
 interface CommandPaletteProps {
-  onClose: () => void;
-  onSymbolSelect: (symbol: string) => void;
+    onClose: () => void;
+    onSymbolSelect: (symbol: string) => void;
 }
 
-interface SearchResult {
-  symbol: string;
-  name: string;
-  type: 'stock' | 'etf' | 'index' | 'crypto';
-  exchange: string;
-}
+export const CommandPalette: React.FC<CommandPaletteProps> = ({ onClose, onSymbolSelect }) => {
+    const [isOpen, setIsOpen] = useState(true);
 
-export const CommandPalette = ({ onClose, onSymbolSelect }: CommandPaletteProps) => {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
+    // Hotkey to open/close the palette
+    useHotkeys('meta+k', (e) => {
+        e.preventDefault();
+        setIsOpen(prev => !prev);
+    });
 
-  const mockResults: SearchResult[] = [
-    { symbol: 'AAPL', name: 'Apple Inc.', type: 'stock', exchange: 'NASDAQ' },
-    { symbol: 'GOOGL', name: 'Alphabet Inc.', type: 'stock', exchange: 'NASDAQ' },
-    { symbol: 'MSFT', name: 'Microsoft Corporation', type: 'stock', exchange: 'NASDAQ' },
-    { symbol: 'TSLA', name: 'Tesla Inc.', type: 'stock', exchange: 'NASDAQ' },
-    { symbol: 'NVDA', name: 'NVIDIA Corporation', type: 'stock', exchange: 'NASDAQ' },
-    { symbol: 'SPY', name: 'SPDR S&P 500 ETF Trust', type: 'etf', exchange: 'NYSE' },
-    { symbol: 'QQQ', name: 'Invesco QQQ Trust', type: 'etf', exchange: 'NASDAQ' },
-    { symbol: 'BTC-USD', name: 'Bitcoin USD', type: 'crypto', exchange: 'Crypto' },
-  ];
+    useEffect(() => {
+        if (!isOpen) {
+            onClose();
+        }
+    }, [isOpen, onClose]);
 
-  useEffect(() => {
-    if (query.length > 0) {
-      const filtered = mockResults.filter(
-        result =>
-          result.symbol.toLowerCase().includes(query.toLowerCase()) ||
-          result.name.toLowerCase().includes(query.toLowerCase())
-      );
-      setResults(filtered);
-      setSelectedIndex(0);
-    } else {
-      setResults([]);
-    }
-  }, [query]);
+    const handleSymbolSelect = (symbol: string) => {
+        onSymbolSelect(symbol);
+        setIsOpen(false);
+    };
 
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    if (!isOpen) return null;
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      onClose();
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setSelectedIndex(prev => (prev + 1) % results.length);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setSelectedIndex(prev => (prev - 1 + results.length) % results.length);
-    } else if (e.key === 'Enter' && results[selectedIndex]) {
-      handleSelect(results[selectedIndex]);
-    }
-  };
-
-  const handleSelect = (result: SearchResult) => {
-    onSymbolSelect(result.symbol);
-    onClose();
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'stock': return 'text-terminal-cyan';
-      case 'etf': return 'text-terminal-green';
-      case 'index': return 'text-terminal-amber';
-      case 'crypto': return 'text-terminal-orange';
-      default: return 'text-terminal-muted';
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-start justify-center pt-20 z-50">
-      <div className="bg-terminal-panel border border-terminal-border rounded-lg w-full max-w-2xl mx-4 shadow-2xl">
-        {/* Search Input */}
-        <div className="flex items-center border-b border-terminal-border p-4">
-          <Search className="w-5 h-5 text-terminal-muted mr-3" />
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Search symbols, companies, or commands..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="flex-1 bg-transparent text-terminal-text placeholder-terminal-muted focus:outline-none"
-          />
-          <div className="flex items-center space-x-2 text-xs text-terminal-muted">
-            <kbd className="bg-terminal-border px-2 py-1 rounded">ESC</kbd>
-            <span>to close</span>
-          </div>
-        </div>
-
-        {/* Results */}
-        <div className="max-h-96 overflow-y-auto">
-          {query.length === 0 ? (
-            <div className="p-6 text-center">
-              <Command className="w-8 h-8 text-terminal-muted mx-auto mb-2" />
-              <p className="text-terminal-muted text-sm">
-                Start typing to search for symbols, companies, or use commands
-              </p>
-              <div className="mt-4 space-y-2 text-xs text-terminal-muted">
-                <div>Try: AAPL, GOOGL, SPY, or BTC-USD</div>
-              </div>
-            </div>
-          ) : results.length === 0 ? (
-            <div className="p-6 text-center">
-              <p className="text-terminal-muted text-sm">
-                No results found for "{query}"
-              </p>
-            </div>
-          ) : (
-            <div className="py-2">
-              {results.map((result, index) => (
-                <div
-                  key={result.symbol}
-                  className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
-                    index === selectedIndex
-                      ? 'bg-terminal-orange/20 border-l-2 border-terminal-orange'
-                      : 'hover:bg-terminal-border/30'
-                  }`}
-                  onClick={() => handleSelect(result)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div>
-                      <div className="font-mono font-semibold text-terminal-cyan">
-                        {result.symbol}
-                      </div>
-                      <div className="text-sm text-terminal-muted truncate">
-                        {result.name}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <span className={`text-xs font-medium px-2 py-1 rounded ${getTypeColor(result.type)}`}>
-                      {result.type.toUpperCase()}
-                    </span>
-                    <span className="text-xs text-terminal-muted">
-                      {result.exchange}
-                    </span>
-                  </div>
+    return (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-16">
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
+            <CommandPrimitive className="relative z-10 w-full max-w-2xl rounded-lg border border-terminal-border bg-terminal-bg text-terminal-text shadow-2xl">
+                <div className="flex items-center border-b border-terminal-border px-3">
+                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    <CommandPrimitive.Input 
+                        className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-terminal-muted disabled:cursor-not-allowed disabled:opacity-50"
+                        placeholder="Type a command or search..."
+                    />
                 </div>
-              ))}
-            </div>
-          )}
+                <CommandPrimitive.List className="max-h-[400px] overflow-y-auto overflow-x-hidden">
+                    <CommandPrimitive.Empty className="py-6 text-center text-sm">No results found.</CommandPrimitive.Empty>
+                    
+                    <CommandPrimitive.Group heading="Navigation" className="p-2 text-xs text-terminal-muted">
+                        <CommandItem onSelect={() => console.log('Navigate to Dashboard')}>
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            <span>Go to Dashboard</span>
+                        </CommandItem>
+                        <CommandItem onSelect={() => console.log('Open Screener')}>
+                            <BarChart2 className="mr-2 h-4 w-4" />
+                            <span>Open Screener</span>
+                        </CommandItem>
+                        <CommandItem onSelect={() => console.log('New Trade')}>
+                            <Briefcase className="mr-2 h-4 w-4" />
+                            <span>New Trade</span>
+                        </CommandItem>
+                    </CommandPrimitive.Group>
+
+                    <CommandPrimitive.Group heading="Stock Tickers" className="p-2 text-xs text-terminal-muted">
+                        {stockTickers.map(stock => (
+                            <CommandItem key={stock.symbol} onSelect={() => handleSymbolSelect(stock.symbol)}>
+                                <File className="mr-2 h-4 w-4" />
+                                <div className="flex w-full items-center justify-between">
+                                    <span>{stock.name}</span>
+                                    <span className="text-terminal-cyan">{stock.symbol}</span>
+                                </div>
+                            </CommandItem>
+                        ))}
+                    </CommandPrimitive.Group>
+                </CommandPrimitive.List>
+            </CommandPrimitive>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
+
+// A wrapper for the command item to provide consistent styling
+const CommandItem = ({ children, ...props }: React.ComponentProps<typeof CommandPrimitive.Item>) => (
+    <CommandPrimitive.Item 
+        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-terminal-border aria-selected:text-terminal-orange data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        {...props}
+    >
+        {children}
+    </CommandPrimitive.Item>
+);
