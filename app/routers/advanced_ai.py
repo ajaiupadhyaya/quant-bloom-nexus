@@ -48,14 +48,17 @@ async def comprehensive_market_analysis(request: MarketAnalysisRequest):
     """
     try:
         # Fetch market data
-        market_data = await market_data_service.get_historical_data(
+        market_data_raw = await market_data_service.get_market_data(
             symbol=request.symbol,
             period=f"{request.lookback_days}d",
             interval=request.timeframe
         )
         
-        if market_data.empty:
+        if not market_data_raw:
             raise HTTPException(status_code=404, detail=f"No market data found for {request.symbol}")
+        
+        # Convert to DataFrame
+        market_data = pd.DataFrame(market_data_raw)
         
         # Run comprehensive analysis
         analysis_result = await advanced_ai_engine.comprehensive_market_analysis(
@@ -157,14 +160,18 @@ async def discover_alpha_opportunities(request: AlphaDiscoveryRequest):
         for symbol in request.universe:
             try:
                 # Get market data
-                market_data = await market_data_service.get_historical_data(
+                market_data_raw = await market_data_service.get_market_data(
                     symbol=symbol,
                     period="90d",
                     interval="1d"
                 )
                 
-                if market_data.empty:
+                if not market_data_raw:
                     continue
+                
+                market_data = pd.DataFrame(market_data_raw)
+                
+                # market_data is already checked above
                 
                 # Run alpha discovery analysis
                 alpha_result = await advanced_ai_engine.comprehensive_market_analysis(
@@ -258,14 +265,18 @@ async def _analyze_single_asset(symbol: str, risk_tolerance: float) -> Dict[str,
     """Analyze a single asset for trading signals"""
     try:
         # Get market data
-        market_data = await market_data_service.get_historical_data(
+        market_data_raw = await market_data_service.get_market_data(
             symbol=symbol,
             period="30d",
             interval="1d"
         )
         
-        if market_data.empty:
+        if not market_data_raw:
             return {"status": "error", "error": "No market data available"}
+        
+        market_data = pd.DataFrame(market_data_raw)
+        
+        # market_data is already checked above
         
         # Run analysis
         analysis = await advanced_ai_engine.comprehensive_market_analysis(

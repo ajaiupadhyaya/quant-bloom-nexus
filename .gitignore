@@ -62,3 +62,6 @@ cache/
 # Temporary files
 tmp/
 temp/
+
+# Hosting instructions (contains sensitive deployment info)
+HOSTING_INSTRUCTIONS.md

@@ -104,7 +104,7 @@ export const QuantitativeAnalysis: React.FC<QuantitativeAnalysisProps> = ({ symb
   const fetchOptionPricing = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/v1/analytics/options/price', {
+      const response = await fetch('/api/analytics/options/price', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(optionParams)
@@ -121,7 +121,7 @@ export const QuantitativeAnalysis: React.FC<QuantitativeAnalysisProps> = ({ symb
   const fetchRiskAnalysis = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/v1/analytics/portfolio/risk-analysis', {
+      const response = await fetch('/api/analytics/portfolio/risk-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -140,7 +140,7 @@ export const QuantitativeAnalysis: React.FC<QuantitativeAnalysisProps> = ({ symb
 
   const fetchPerformanceMetrics = async () => {
     try {
-      const response = await fetch(`/api/v1/analytics/performance/metrics?symbol=${symbol}&benchmark=SPY&period=1y`);
+      const response = await fetch(`/api/analytics/performance/metrics?symbol=${symbol}&benchmark=SPY&period=1y`);
       const data = await response.json();
       setPerformanceMetrics(data.performance_metrics);
     } catch (error) {
@@ -150,7 +150,7 @@ export const QuantitativeAnalysis: React.FC<QuantitativeAnalysisProps> = ({ symb
 
   const fetchStatisticalTests = async () => {
     try {
-      const response = await fetch(`/api/v1/analytics/statistics/tests?symbol=${symbol}&period=1y`);
+      const response = await fetch(`/api/analytics/statistics/tests?symbol=${symbol}&period=1y`);
       const data = await response.json();
       setStatisticalTests(data.statistical_tests);
     } catch (error) {
@@ -504,9 +504,9 @@ export const QuantitativeAnalysis: React.FC<QuantitativeAnalysisProps> = ({ symb
                 <CardContent>
                   <D3BarChart
                     data={[
-                      { label: 'Total Return', value: performanceMetrics.total_return * 100 },
-                      { label: 'Benchmark', value: 8.5 },
-                      { label: 'Risk-Free', value: 2.0 }
+                      { x: 'Total Return', y: performanceMetrics.total_return * 100 },
+                      { x: 'Benchmark', y: 8.5 },
+                      { x: 'Risk-Free', y: 2.0 }
                     ]}
                     width={300}
                     height={200}
