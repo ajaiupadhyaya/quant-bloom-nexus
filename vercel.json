@@ -4,7 +4,6 @@
   "installCommand": "npm ci",
   "framework": "vite",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD ./app",
-  "functions": {},
   "rewrites": [
     {
       "source": "/(.*)",
