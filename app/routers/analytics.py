@@ -522,23 +522,21 @@ async def run_statistical_tests(
         df = df.set_index('date').sort_index()
         returns = df['close'].pct_change().dropna()
         
+        if len(returns) < 10:
+            raise HTTPException(status_code=400, detail="Insufficient data for statistical tests")
+        
+        # Basic statistical tests
         from scipy import stats
         
-        # Normality tests
-        shapiro_stat, shapiro_p = stats.shapiro(returns)
+        # Normality test (using smaller sample for Shapiro-Wilk)
+        test_sample = returns.tail(min(5000, len(returns)))
+        shapiro_stat, shapiro_p = stats.shapiro(test_sample)
+        
+        # Jarque-Bera test
         jarque_bera_stat, jarque_bera_p = stats.jarque_bera(returns)
         
-        # Stationarity test (Augmented Dickey-Fuller)
-        from statsmodels.tsa.stattools import adfuller
-        adf_result = adfuller(returns.dropna())
-        
-        # Autocorrelation test (Ljung-Box)
-        from statsmodels.stats.diagnostic import acorr_ljungbox
-        ljung_box = acorr_ljungbox(returns, lags=10, return_df=True)
-        
-        # ARCH effect test
-        from statsmodels.stats.diagnostic import het_arch
-        arch_test = het_arch(returns.dropna())
+        # Simple autocorrelation
+        autocorr_1 = returns.autocorr(lag=1)
         
         return {
             "symbol": symbol,
@@ -555,20 +553,9 @@ async def run_statistical_tests(
                         "is_normal": jarque_bera_p > 0.05
                     }
                 },
-                "stationarity_test": {
-                    "adf_statistic": float(adf_result[0]),
-                    "adf_p_value": float(adf_result[1]),
-                    "is_stationary": adf_result[1] < 0.05
-                },
                 "autocorrelation_test": {
-                    "ljung_box_statistic": float(ljung_box['lb_stat'].iloc[-1]),
-                    "ljung_box_p_value": float(ljung_box['lb_pvalue'].iloc[-1]),
-                    "has_autocorrelation": ljung_box['lb_pvalue'].iloc[-1] < 0.05
-                },
-                "arch_effect_test": {
-                    "arch_statistic": float(arch_test[0]),
-                    "arch_p_value": float(arch_test[1]),
-                    "has_arch_effects": arch_test[1] < 0.05
+                    "lag_1_autocorr": float(autocorr_1) if not pd.isna(autocorr_1) else 0.0,
+                    "has_autocorrelation": abs(autocorr_1) > 0.1 if not pd.isna(autocorr_1) else False
                 }
             },
             "descriptive_statistics": {

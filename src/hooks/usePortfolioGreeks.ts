@@ -34,7 +34,7 @@ export const usePortfolioGreeks = (interval: number = 3000): UsePortfolioGreeksS
   useEffect(() => {
     const fetchGreeks = async () => {
       try {
-        const response = await axios.get<PortfolioGreeks>(`${API_BASE_URL}/api/v1/portfolio/greeks`);
+        const response = await axios.get<PortfolioGreeks>(`${API_BASE_URL}/portfolio/greeks`);
         setState(prevState => ({
           ...prevState,
           data: response.data,

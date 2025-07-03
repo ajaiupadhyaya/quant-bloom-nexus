@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize Sentry for error logging
 SENTRY_DSN = os.getenv("SENTRY_DSN", "")
-if SENTRY_DSN:
+if SENTRY_DSN and SENTRY_DSN.startswith("http"):
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         traces_sample_rate=0.2,  # Adjust as needed
@@ -32,7 +32,7 @@ if SENTRY_DSN:
     )
     logger.info("Sentry initialized for error logging.")
 else:
-    logger.warning("Sentry DSN not set. Error logging to Sentry is disabled.")
+    logger.warning("Sentry DSN not set or invalid. Error logging to Sentry is disabled.")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
