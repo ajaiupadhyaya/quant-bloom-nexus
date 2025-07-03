@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
-import { ComposedChart, Line, Bar, XAxis, YAxis, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { Activity, BarChart3, TrendingUp, Layers } from 'lucide-react';
+import { D3LineChart } from './D3LineChart';
 
 interface IndicatorData {
   time: string;
@@ -15,6 +14,7 @@ interface IndicatorData {
   bb_lower: number;
   support: number;
   resistance: number;
+  sma20: number;
 }
 
 export const TechnicalIndicators = ({ symbol }: { symbol: string }) => {
@@ -49,6 +49,9 @@ export const TechnicalIndicators = ({ symbol }: { symbol: string }) => {
         const support = Math.floor(price / 5) * 5 - 2;
         const resistance = Math.ceil(price / 5) * 5 + 2;
         
+        // Simple Moving Average (SMA)
+        const sma20 = price;
+        
         technicalData.push({
           time: time.toLocaleTimeString(),
           price,
@@ -60,7 +63,8 @@ export const TechnicalIndicators = ({ symbol }: { symbol: string }) => {
           bb_middle,
           bb_lower,
           support,
-          resistance
+          resistance,
+          sma20
         });
       }
       return technicalData;
@@ -82,6 +86,10 @@ export const TechnicalIndicators = ({ symbol }: { symbol: string }) => {
   };
 
   const latestData = data[data.length - 1];
+
+  // In the main chart area, format the data for D3LineChart
+  const priceData = data.map(d => ({ x: d.time, y: d.price }));
+  const smaData = data.map(d => ({ x: d.time, y: d.sma20 })); // Example for SMA20
 
   return (
     <div className="terminal-panel h-full flex flex-col">
@@ -137,77 +145,16 @@ export const TechnicalIndicators = ({ symbol }: { symbol: string }) => {
         
         {/* Main Chart */}
         <div className="flex-1 p-3">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data}>
-              <XAxis 
-                dataKey="time" 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: '#888888' }}
-              />
-              <YAxis 
-                yAxisId="price"
-                orientation="right"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: '#888888' }}
-              />
-              
-              {/* Price Line */}
-              <Line 
-                yAxisId="price"
-                type="monotone" 
-                dataKey="price" 
-                stroke="#00d4ff" 
-                strokeWidth={2}
-                dot={false}
-              />
-              
-              {/* Bollinger Bands */}
-              {activeIndicators.bollinger && (
-                <>
-                  <Line 
-                    yAxisId="price"
-                    type="monotone" 
-                    dataKey="bb_upper" 
-                    stroke="#ff6b35" 
-                    strokeWidth={1}
-                    strokeDasharray="3 3"
-                    dot={false}
-                  />
-                  <Line 
-                    yAxisId="price"
-                    type="monotone" 
-                    dataKey="bb_lower" 
-                    stroke="#ff6b35" 
-                    strokeWidth={1}
-                    strokeDasharray="3 3"
-                    dot={false}
-                  />
-                </>
-              )}
-              
-              {/* Support and Resistance */}
-              {activeIndicators.support_resistance && (
-                <>
-                  <ReferenceLine 
-                    yAxisId="price"
-                    y={latestData?.support} 
-                    stroke="#00ff88" 
-                    strokeDasharray="5 5"
-                    label={{ value: "Support", fontSize: 10, fill: "#00ff88" }}
-                  />
-                  <ReferenceLine 
-                    yAxisId="price"
-                    y={latestData?.resistance} 
-                    stroke="#ff4757" 
-                    strokeDasharray="5 5"
-                    label={{ value: "Resistance", fontSize: 10, fill: "#ff4757" }}
-                  />
-                </>
-              )}
-            </ComposedChart>
-          </ResponsiveContainer>
+          <D3LineChart
+            data={priceData}
+            width={600}
+            height={320}
+            color="#00d4ff"
+            title="Price & SMA20"
+            xLabel="Time"
+            yLabel="Price"
+          />
+          {/* TODO: Overlay more indicators with D3, e.g., Bollinger Bands, RSI, etc. */}
         </div>
       </div>
     </div>

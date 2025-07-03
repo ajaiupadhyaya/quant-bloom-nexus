@@ -1,9 +1,7 @@
-
-
 import json
 from typing import List, Dict, Union
-from vollib.black_scholes import black_scholes as bs
-from vollib.black_scholes.greeks.analytical import delta, gamma, vega, theta
+from py_vollib.black_scholes import black_scholes as bs
+from py_vollib.black_scholes.greeks.analytical import delta, gamma, vega, theta
 
 def calculate_portfolio_greeks(positions_json: str) -> Dict[str, float]:
     """

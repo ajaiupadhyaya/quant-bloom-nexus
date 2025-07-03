@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDashboard } from '@/context/DashboardContext';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -8,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { realTimeDataProvider, RealTimeQuote, HistoricalDataPoint } from '../lib/data/RealTimeDataProvider';
 import { TechnicalIndicators } from '../lib/analysis/TechnicalIndicators';
 import { PredictionModels, PredictionResult, MarketRegime } from '../lib/ai/PredictionModels';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, CandlestickChart, ReferenceLine } from 'recharts';
 
 interface TerminalTab {
   id: string;
@@ -269,28 +269,9 @@ export const ProfessionalTerminal: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   {historicalData.length > 0 && (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={historicalData.slice(-100)}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                        <XAxis 
-                          dataKey="timestamp" 
-                          tickFormatter={(value) => new Date(value).toLocaleDateString()}
-                          stroke="#9CA3AF"
-                        />
-                        <YAxis stroke="#9CA3AF" />
-                        <Tooltip 
-                          contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #4B5563' }}
-                          labelStyle={{ color: '#F97316' }}
-                        />
-                        <Line type="monotone" dataKey="close" stroke="#10B981" strokeWidth={2} dot={false} />
-                        {indicators?.sma20 && (
-                          <Line type="monotone" dataKey="sma20" stroke="#F59E0B" strokeWidth={1} dot={false} />
-                        )}
-                        {indicators?.sma50 && (
-                          <Line type="monotone" dataKey="sma50" stroke="#EF4444" strokeWidth={1} dot={false} />
-                        )}
-                      </LineChart>
-                    </ResponsiveContainer>
+                    <div className="h-full w-full">
+                      {/* Placeholder for D3 chart */}
+                    </div>
                   )}
                 </CardContent>
               </Card>

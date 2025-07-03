@@ -1,10 +1,9 @@
-
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { BarChart, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useHistoricalData } from '@/hooks/useHistoricalData';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { D3LineChart } from './D3LineChart';
 
 interface PriceChartProps {
   symbol: string;
@@ -39,6 +38,9 @@ export const PriceChart = ({ symbol }: PriceChartProps) => {
     const latestData = data[data.length - 1];
     const priceChange = latestData.close - data[0].close;
 
+    // Format data for D3LineChart
+    const d3Data = data.map(d => ({ x: d.date, y: d.close }));
+
     return (
         <>
             {/* Chart Header */}
@@ -66,39 +68,15 @@ export const PriceChart = ({ symbol }: PriceChartProps) => {
 
             {/* Chart */}
             <div className="flex-1 p-4">
-                <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={data}>
-                        <XAxis 
-                            dataKey="date" 
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fontSize: 11, fill: '#888888' }}
-                        />
-                        <YAxis 
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fontSize: 11, fill: '#888888' }}
-                            domain={['dataMin - 1', 'dataMax + 1']}
-                        />
-                        <Tooltip 
-                            contentStyle={{
-                                backgroundColor: '#1a1a1a',
-                                border: '1px solid #333333',
-                                borderRadius: '4px',
-                                color: '#ffffff'
-                            }}
-                            formatter={(value: number) => [`${value.toFixed(2)}`, 'Price']}
-                        />
-                        <Line 
-                            type="monotone" 
-                            dataKey="close" 
-                            stroke="#00d4ff" 
-                            strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 4, fill: '#00d4ff' }}
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
+                <D3LineChart
+                  data={d3Data}
+                  width={600}
+                  height={320}
+                  color="#00d4ff"
+                  title={`Price Chart`}
+                  xLabel="Date"
+                  yLabel="Price"
+                />
             </div>
         </>
     );

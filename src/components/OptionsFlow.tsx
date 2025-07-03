@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 import { TrendingUp, TrendingDown, Circle, Target } from 'lucide-react';
+import { D3BarChart } from './D3BarChart';
+import { D3PieChart } from './D3PieChart';
 
 interface OptionsFlowData {
   strike: number;
@@ -61,6 +61,19 @@ export const OptionsFlow = ({ symbol }: OptionsFlowProps) => {
     { name: 'Puts', value: 40, color: '#ff4757' }
   ];
 
+  // Format data for D3 charts
+  const volumeFlowData = flowData.slice(0, 6).map(d => ({
+    x: d.strike.toString(),
+    y: d.callVolume + d.putVolume,
+    color: d.callVolume > d.putVolume ? '#00ff88' : '#ff4757'
+  }));
+
+  const distributionData = pieData.map(d => ({
+    label: d.name,
+    value: d.value,
+    color: d.color
+  }));
+
   return (
     <div className="terminal-panel h-full flex flex-col">
       <div className="border-b border-terminal-border p-3">
@@ -111,48 +124,29 @@ export const OptionsFlow = ({ symbol }: OptionsFlowProps) => {
             {/* Volume Flow */}
             <div>
               <div className="text-xs text-terminal-muted mb-1">Volume Flow</div>
-              <ResponsiveContainer width="100%" height="80%">
-                <BarChart data={flowData.slice(0, 6)}>
-                  <XAxis 
-                    dataKey="strike" 
-                    axisLine={false}
-                    tick={{ fontSize: 9, fill: '#888888' }}
-                  />
-                  <YAxis hide />
-                  <Bar dataKey="callVolume" stackId="a">
-                    {flowData.slice(0, 6).map((entry, index) => (
-                      <Cell key={`call-${index}`} fill="#00ff88" opacity={0.8} />
-                    ))}
-                  </Bar>
-                  <Bar dataKey="putVolume" stackId="a">
-                    {flowData.slice(0, 6).map((entry, index) => (
-                      <Cell key={`put-${index}`} fill="#ff4757" opacity={0.8} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="h-[80%]">
+                <D3BarChart
+                  data={volumeFlowData}
+                  width={300}
+                  height={120}
+                  title="Volume Flow"
+                  xLabel="Strike"
+                  yLabel="Volume"
+                />
+              </div>
             </div>
             
             {/* Distribution */}
             <div>
               <div className="text-xs text-terminal-muted mb-1">Distribution</div>
-              <ResponsiveContainer width="100%" height="80%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={20}
-                    outerRadius={40}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="h-[80%]">
+                <D3PieChart
+                  data={distributionData}
+                  width={300}
+                  height={120}
+                  title="Distribution"
+                />
+              </div>
             </div>
           </div>
         </div>

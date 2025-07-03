@@ -13,7 +13,6 @@ torchaudio>=2.0.0
 # pytorch-lightning>=2.0.0  # May not support Python 3.13 yet
 
 # Financial Data Analysis
-yfinance>=0.2.18
 pandas-datareader>=0.10.0
 # quantlib>=1.30  # Commented out - complex C++ dependencies
 zipline-reloaded>=3.0.0
@@ -74,7 +73,7 @@ pystan==3.8.0
 arviz==0.17.0
 
 # Risk Management & Portfolio Optimization
-riskfolio-lib==5.1.0
+riskfolio-lib>=7.0.0
 pypfopt==1.5.5
 bt==0.2.9
 vectorbt==0.25.2
@@ -95,8 +94,10 @@ dash==2.16.1
 streamlit==1.29.0
 
 # Web Framework & APIs
-fastapi==0.108.0
-uvicorn==0.25.0
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+jinja2==3.1.2
 django==4.2.8
 django-rest-framework==3.14.0
 flask==3.0.0
@@ -190,7 +191,7 @@ openpyxl==3.1.2
 xlrd==2.0.1
 
 # HTTP & Networking
-httpx==0.26.0
+httpx==0.25.2
 urllib3==2.1.0
 certifi==2023.11.17
 
@@ -204,10 +205,16 @@ python-igraph>=0.10.0
 # rapids-cudf>=23.0.0   # Commented out - RAPIDS not available on macOS
 
 # Environment & System
-psutil>=5.9.0 yfinance
+psutil>=5.9.0
 alpaca-trade-api
 vollib
-transformers
-torch
 newsapi-python
-redis
+
+# New dependencies
+yfinance==0.2.28
+py_vollib==1.0.1
+python-polygon==1.2.0
+ta-lib==0.4.28
+python-dotenv==1.0.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4

@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, ThumbsUp, ThumbsDown, TrendingUp, Globe, Twitter } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts';
+import { D3PieChart } from './D3PieChart';
 
 interface SentimentData {
   source: string;
@@ -102,6 +101,13 @@ export const SentimentAnalysis = ({ symbol }: { symbol: string }) => {
     }
   };
 
+  // Format data for D3PieChart
+  const sentimentChartData = pieData.map(d => ({
+    label: d.name,
+    value: d.value,
+    color: d.color
+  }));
+
   return (
     <div className="terminal-panel h-full flex flex-col">
       <div className="border-b border-terminal-border p-3">
@@ -143,22 +149,12 @@ export const SentimentAnalysis = ({ symbol }: { symbol: string }) => {
         <div className="p-3 border-b border-terminal-border/50">
           <h3 className="text-xs font-medium text-terminal-cyan mb-2">SENTIMENT DISTRIBUTION</h3>
           <div className="h-32">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={25}
-                  outerRadius={50}
-                  dataKey="value"
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
+            <D3PieChart
+              data={sentimentChartData}
+              width={300}
+              height={128}
+              title="Sentiment Distribution"
+            />
           </div>
           <div className="flex justify-center space-x-4 mt-2">
             {pieData.map((item) => (

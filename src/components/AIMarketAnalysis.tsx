@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Brain, TrendingUp, TrendingDown, Zap, Target, AlertTriangle } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { D3LineChart } from './D3LineChart';
 
 interface PredictionData {
   timestamp: string;
@@ -107,6 +106,17 @@ export const AIMarketAnalysis = ({ symbol }: { symbol: string }) => {
     }
   };
 
+  // Format data for D3LineChart
+  const predictionChartData = predictions.map((p, index) => ({
+    x: index.toString(),
+    y: p.predicted
+  }));
+
+  const actualChartData = predictions.map((p, index) => ({
+    x: index.toString(), 
+    y: p.actual
+  }));
+
   return (
     <div className="terminal-panel h-full flex flex-col">
       <div className="border-b border-terminal-border p-3 flex items-center justify-between">
@@ -125,37 +135,15 @@ export const AIMarketAnalysis = ({ symbol }: { symbol: string }) => {
         <div className="p-3 border-b border-terminal-border/50">
           <h3 className="text-xs font-medium text-terminal-cyan mb-2">24H PRICE PREDICTION</h3>
           <div className="h-32">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={predictions}>
-                <XAxis 
-                  dataKey="timestamp" 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 10, fill: '#888888' }}
-                />
-                <YAxis 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 10, fill: '#888888' }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="actual" 
-                  stroke="#888888" 
-                  strokeWidth={1}
-                  dot={false}
-                  name="Actual"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="predicted" 
-                  stroke="#00d4ff" 
-                  strokeWidth={2}
-                  dot={false}
-                  name="Predicted"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <D3LineChart
+              data={predictionChartData}
+              width={400}
+              height={128}
+              color="#00d4ff"
+              title="24H Price Prediction"
+              xLabel="Time"
+              yLabel="Price"
+            />
           </div>
         </div>
 

@@ -13,6 +13,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTradingStore, useMarketData, usePositions, useActivePortfolio } from '../lib/store/TradingStore';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
+import { D3LineChart } from './D3LineChart';
+import { D3BarChart } from './D3BarChart';
 
 // Bloomberg-style terminal colors
 const terminalTheme = {
@@ -42,6 +50,64 @@ interface EconomicEvent {
   actual?: number;
   forecast?: number;
   previous?: number;
+}
+
+interface Order {
+  id: string;
+  symbol: string;
+  side: 'BUY' | 'SELL';
+  orderType: 'MARKET' | 'LIMIT' | 'STOP' | 'STOP_LIMIT';
+  quantity: number;
+  price?: number;
+  stopPrice?: number;
+  timeInForce: 'DAY' | 'GTC' | 'IOC' | 'FOK';
+  status: 'PENDING' | 'FILLED' | 'PARTIALLY_FILLED' | 'CANCELLED' | 'REJECTED';
+  filledQuantity: number;
+  avgFillPrice?: number;
+  timestamp: string;
+  commission: number;
+  pnl?: number;
+}
+
+interface PortfolioPosition {
+  symbol: string;
+  quantity: number;
+  avgPrice: number;
+  marketValue: number;
+  unrealizedPnL: number;
+  realizedPnL: number;
+  dayChange: number;
+  dayChangePercent: number;
+  exposure: number;
+  beta: number;
+  sector: string;
+}
+
+interface RiskMetrics {
+  portfolioValue: number;
+  totalExposure: number;
+  netExposure: number;
+  grossExposure: number;
+  buyingPower: number;
+  marginUsed: number;
+  dayPnL: number;
+  unrealizedPnL: number;
+  realizedPnL: number;
+  var95: number;
+  sharpeRatio: number;
+  maxDrawdown: number;
+  beta: number;
+}
+
+interface AlertRule {
+  id: string;
+  type: 'PRICE' | 'VOLUME' | 'PNL' | 'RISK';
+  symbol?: string;
+  condition: 'ABOVE' | 'BELOW' | 'EQUALS';
+  threshold: number;
+  active: boolean;
+  triggered: boolean;
+  message: string;
 }
 
 export const InstitutionalTradingTerminal: React.FC = () => {
@@ -87,6 +153,34 @@ export const InstitutionalTradingTerminal: React.FC = () => {
     dataProcessed: 2.4e6
   });
 
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [portfolioPositions, setPortfolioPositions] = useState<PortfolioPosition[]>([]);
+  const [riskMetrics, setRiskMetrics] = useState<RiskMetrics | null>(null);
+  const [alerts, setAlerts] = useState<AlertRule[]>([]);
+  const [loading, setLoading] = useState(false);
+  
+  // Order form state
+  const [orderForm, setOrderForm] = useState({
+    symbol: '',
+    side: 'BUY' as 'BUY' | 'SELL',
+    orderType: 'MARKET' as 'MARKET' | 'LIMIT' | 'STOP' | 'STOP_LIMIT',
+    quantity: 0,
+    price: 0,
+    stopPrice: 0,
+    timeInForce: 'DAY' as 'DAY' | 'GTC' | 'IOC' | 'FOK'
+  });
+
+  // Risk controls
+  const [riskControls, setRiskControls] = useState({
+    maxOrderSize: 10000,
+    maxDayLoss: 50000,
+    maxPositionSize: 100000,
+    allowShortSelling: true,
+    requireConfirmation: true,
+    enableStopLoss: true,
+    stopLossPercent: 5
+  });
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -97,6 +191,157 @@ export const InstitutionalTradingTerminal: React.FC = () => {
   useEffect(() => {
     setConnectionStatus(storeConnectionStatus);
   }, [storeConnectionStatus]);
+
+  useEffect(() => {
+    fetchPortfolioData();
+    const interval = setInterval(fetchPortfolioData, 5000); // Update every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchPortfolioData = async () => {
+    try {
+      // Simulate API calls
+      await Promise.all([
+        fetchOrders(),
+        fetchPositions(),
+        fetchRiskMetrics(),
+        fetchAlerts()
+      ]);
+    } catch (error) {
+      console.error('Failed to fetch portfolio data:', error);
+    }
+  };
+
+  const fetchOrders = async () => {
+    // Simulate order data
+    const mockOrders: Order[] = [
+      {
+        id: 'ORD001',
+        symbol: 'AAPL',
+        side: 'BUY',
+        orderType: 'LIMIT',
+        quantity: 100,
+        price: 180.50,
+        timeInForce: 'DAY',
+        status: 'FILLED',
+        filledQuantity: 100,
+        avgFillPrice: 180.45,
+        timestamp: new Date().toISOString(),
+        commission: 1.00,
+        pnl: 25.00
+      },
+      {
+        id: 'ORD002',
+        symbol: 'TSLA',
+        side: 'SELL',
+        orderType: 'MARKET',
+        quantity: 50,
+        timeInForce: 'DAY',
+        status: 'PENDING',
+        filledQuantity: 0,
+        timestamp: new Date().toISOString(),
+        commission: 0
+      }
+    ];
+    setOrders(mockOrders);
+  };
+
+  const fetchPositions = async () => {
+    // Simulate position data
+    const mockPositions: PortfolioPosition[] = [
+      {
+        symbol: 'AAPL',
+        quantity: 500,
+        avgPrice: 175.20,
+        marketValue: 90250,
+        unrealizedPnL: 2750,
+        realizedPnL: 1250,
+        dayChange: 1.25,
+        dayChangePercent: 0.69,
+        exposure: 90250,
+        beta: 1.2,
+        sector: 'Technology'
+      },
+      {
+        symbol: 'MSFT',
+        quantity: 300,
+        avgPrice: 335.80,
+        marketValue: 102180,
+        unrealizedPnL: -1580,
+        realizedPnL: 850,
+        dayChange: -0.85,
+        dayChangePercent: -0.25,
+        exposure: 102180,
+        beta: 0.9,
+        sector: 'Technology'
+      },
+      {
+        symbol: 'SPY',
+        quantity: -200,
+        avgPrice: 445.50,
+        marketValue: -89800,
+        unrealizedPnL: 1200,
+        realizedPnL: -300,
+        dayChange: 0.45,
+        dayChangePercent: 0.10,
+        exposure: 89800,
+        beta: 1.0,
+        sector: 'ETF'
+      }
+    ];
+    setPortfolioPositions(mockPositions);
+  };
+
+  const fetchRiskMetrics = async () => {
+    // Calculate risk metrics from positions
+    const totalValue = portfolioPositions.reduce((sum, pos) => sum + pos.marketValue, 0);
+    const totalUnrealizedPnL = portfolioPositions.reduce((sum, pos) => sum + pos.unrealizedPnL, 0);
+    const totalRealizedPnL = portfolioPositions.reduce((sum, pos) => sum + pos.realizedPnL, 0);
+    const grossExposure = portfolioPositions.reduce((sum, pos) => sum + Math.abs(pos.exposure), 0);
+    const netExposure = portfolioPositions.reduce((sum, pos) => sum + pos.exposure, 0);
+
+    const mockRiskMetrics: RiskMetrics = {
+      portfolioValue: totalValue || 250000,
+      totalExposure: grossExposure || 282230,
+      netExposure: netExposure || 102630,
+      grossExposure: grossExposure || 282230,
+      buyingPower: 150000,
+      marginUsed: 75000,
+      dayPnL: 1870,
+      unrealizedPnL: totalUnrealizedPnL || 2370,
+      realizedPnL: totalRealizedPnL || 1800,
+      var95: -12500,
+      sharpeRatio: 1.45,
+      maxDrawdown: -8.5,
+      beta: 1.1
+    };
+    setRiskMetrics(mockRiskMetrics);
+  };
+
+  const fetchAlerts = async () => {
+    const mockAlerts: AlertRule[] = [
+      {
+        id: 'ALT001',
+        type: 'PRICE',
+        symbol: 'AAPL',
+        condition: 'BELOW',
+        threshold: 175,
+        active: true,
+        triggered: false,
+        message: 'AAPL price below $175'
+      },
+      {
+        id: 'ALT002',
+        type: 'PNL',
+        condition: 'BELOW',
+        threshold: -10000,
+        active: true,
+        triggered: false,
+        message: 'Daily P&L below -$10,000'
+      }
+    ];
+    setAlerts(mockAlerts);
+  };
 
   const handleSymbolChange = useCallback((symbol: string) => {
     setSelectedSymbol(symbol);
@@ -118,6 +363,91 @@ export const InstitutionalTradingTerminal: React.FC = () => {
   const formatPercent = (value: number) => {
     return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
   };
+
+  const submitOrder = async () => {
+    if (!orderForm.symbol || orderForm.quantity <= 0) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    // Risk checks
+    if (orderForm.quantity * (orderForm.price || 100) > riskControls.maxOrderSize) {
+      alert('Order size exceeds maximum allowed');
+      return;
+    }
+
+    if (riskControls.requireConfirmation) {
+      const confirmed = window.confirm(
+        `Confirm ${orderForm.side} ${orderForm.quantity} shares of ${orderForm.symbol} at ${orderForm.orderType} ${orderForm.price || 'market'}`
+      );
+      if (!confirmed) return;
+    }
+
+    setLoading(true);
+    try {
+      // Simulate order submission
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const newOrder: Order = {
+        id: `ORD${Date.now()}`,
+        ...orderForm,
+        status: 'PENDING',
+        filledQuantity: 0,
+        timestamp: new Date().toISOString(),
+        commission: 1.00
+      };
+      
+      setOrders(prev => [newOrder, ...prev]);
+      
+      // Reset form
+      setOrderForm({
+        symbol: '',
+        side: 'BUY',
+        orderType: 'MARKET',
+        quantity: 0,
+        price: 0,
+        stopPrice: 0,
+        timeInForce: 'DAY'
+      });
+      
+      alert('Order submitted successfully');
+    } catch (error) {
+      console.error('Order submission failed:', error);
+      alert('Order submission failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelOrder = async (orderId: string) => {
+    try {
+      setOrders(prev => prev.map(order => 
+        order.id === orderId ? { ...order, status: 'CANCELLED' } : order
+      ));
+      alert('Order cancelled successfully');
+    } catch (error) {
+      console.error('Order cancellation failed:', error);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'FILLED': return 'bg-green-100 text-green-800';
+      case 'PENDING': return 'bg-yellow-100 text-yellow-800';
+      case 'CANCELLED': return 'bg-gray-100 text-gray-800';
+      case 'REJECTED': return 'bg-red-100 text-red-800';
+      default: return 'bg-blue-100 text-blue-800';
+    }
+  };
+
+  const getPnLColor = (pnl: number) => {
+    if (pnl > 0) return 'text-green-600';
+    if (pnl < 0) return 'text-red-600';
+    return 'text-gray-600';
+  };
+
+  const riskLevel = riskMetrics ? 
+    (Math.abs(riskMetrics.dayPnL) / riskMetrics.portfolioValue) * 100 : 0;
 
   return (
     <div className={`min-h-screen ${terminalTheme.bg} ${terminalTheme.text} font-mono overflow-hidden`}>
@@ -560,7 +890,7 @@ export const InstitutionalTradingTerminal: React.FC = () => {
                   
                   <ScrollArea className="h-32">
                     <div className="space-y-2">
-                      {positions.map((position, index) => (
+                      {portfolioPositions.map((position, index) => (
                         <div key={index} className="flex justify-between items-center text-xs border-b border-gray-700 pb-1">
                           <span className="text-cyan-400">{position.symbol}</span>
                           <span className="text-gray-300">{position.quantity}</span>
@@ -720,7 +1050,7 @@ export const InstitutionalTradingTerminal: React.FC = () => {
         <div className="flex items-center space-x-4">
           <span className="text-green-400">● Market Data Connected</span>
           <span className="text-gray-400">Last Update: {currentTime.toLocaleTimeString()}</span>
-          <span className="text-gray-400">Orders: {positions.length} Active</span>
+          <span className="text-gray-400">Orders: {portfolioPositions.length} Active</span>
         </div>
         <div className="flex items-center space-x-4">
           <span className="text-gray-400">CPU: {systemMetrics.cpuUsage}%</span>
