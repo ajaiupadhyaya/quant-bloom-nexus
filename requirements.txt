@@ -18,8 +18,8 @@ pandas-datareader>=0.10.0
 zipline-reloaded>=3.0.0
 backtrader>=1.9.78
 # ta-lib>=0.4.25  # Commented out - requires system-level TA-Lib installation
-pyfolio>=0.9.2
-empyrical>=0.5.5
+# pyfolio>=0.9.2  # Replaced with custom compatibility layer
+empyrical>=0.5.5  # Portfolio performance metrics
 alphalens-reloaded>=0.4.0
 
 # Time Series Analysis

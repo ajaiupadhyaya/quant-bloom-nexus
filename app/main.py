@@ -7,6 +7,9 @@ import os
 from contextlib import asynccontextmanager
 import sentry_sdk
 
+# Apply compatibility patches first
+from .utils import *  # This applies all compatibility fixes
+
 # Import routers
 from .routers import market_data, ai_models, trading, analytics, auth, advanced_ai
 from .services.ai_engine import ai_engine
