@@ -14,6 +14,7 @@ import { TradingDashboard } from "@/components/TradingDashboard";
 import { TradingInterface } from "@/components/TradingInterface";
 import { PortfolioSummary } from "@/components/PortfolioSummary";
 import { MarketOverview } from "@/components/MarketOverview";
+import { EnhancedMarketOverview } from "@/components/EnhancedMarketOverview";
 import { Watchlist } from "@/components/Watchlist";
 import { SentimentAnalysis } from "@/components/SentimentAnalysis";
 import { DashboardProvider } from "@/context/DashboardContext";
@@ -86,7 +87,7 @@ const Index = () => {
       case 'portfolio':
         return <PortfolioSummary />;
       case 'market':
-        return <MarketOverview />;
+        return <EnhancedMarketOverview />;
       case 'watchlist':
         return <Watchlist selectedSymbol="AAPL" onSymbolSelect={(symbol) => console.log('Selected:', symbol)} />;
       default:

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, BarChart3, TrendingUp, Layers } from 'lucide-react';
-import { D3LineChart } from './D3LineChart';
+import { D3AdvancedLineChart } from './D3AdvancedLineChart';
+import { D3RadarChart } from './D3RadarChart';
 
 interface IndicatorData {
   time: string;
@@ -144,17 +145,33 @@ export const TechnicalIndicators = ({ symbol }: { symbol: string }) => {
         </div>
         
         {/* Main Chart */}
-        <div className="flex-1 p-3">
-          <D3LineChart
+        <div className="flex-1 p-3 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <D3AdvancedLineChart
             data={priceData}
             width={600}
             height={320}
-            color="#00d4ff"
-            title="Price & SMA20"
+            colors={['#ff6b35', '#00d4ff', '#00ff88']}
+            title="Price & Technical Indicators"
             xLabel="Time"
-            yLabel="Price"
+            yLabel="Price ($)"
+            showVolume={true}
           />
-          {/* TODO: Overlay more indicators with D3, e.g., Bollinger Bands, RSI, etc. */}
+          
+          {/* Technical Indicators Radar Chart */}
+          <D3RadarChart
+            data={[
+              { axis: 'RSI', value: latestData?.rsi || 50, max: 100 },
+              { axis: 'MACD Signal', value: Math.abs(latestData?.macd || 0), max: 5 },
+              { axis: 'Volume Trend', value: 75, max: 100 },
+              { axis: 'Momentum', value: 60, max: 100 },
+              { axis: 'Volatility', value: 45, max: 100 },
+              { axis: 'Support Level', value: 80, max: 100 }
+            ]}
+            width={400}
+            height={320}
+            colors={['#ff6b35', '#00d4ff', '#00ff88']}
+            title="Technical Analysis Overview"
+          />
         </div>
       </div>
     </div>

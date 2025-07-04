@@ -3,7 +3,7 @@ import { BarChart, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useHistoricalData } from '@/hooks/useHistoricalData';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { D3LineChart } from './D3LineChart';
+import { D3AdvancedLineChart } from './D3AdvancedLineChart';
 
 interface PriceChartProps {
   symbol: string;
@@ -68,14 +68,15 @@ export const PriceChart = ({ symbol }: PriceChartProps) => {
 
             {/* Chart */}
             <div className="flex-1 p-4">
-                <D3LineChart
+                <D3AdvancedLineChart
                   data={d3Data}
                   width={600}
                   height={320}
-                  color="#00d4ff"
-                  title={`Price Chart`}
+                  colors={['#ff6b35', '#00d4ff', '#00ff88']}
+                  title={`${symbol} Price Analysis`}
                   xLabel="Date"
-                  yLabel="Price"
+                  yLabel="Price ($)"
+                  showVolume={false}
                 />
             </div>
         </>
