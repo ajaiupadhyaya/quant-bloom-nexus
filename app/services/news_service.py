@@ -7,15 +7,20 @@ import os
 import json
 from newsapi import NewsApiClient
 from .ai_engine import ai_engine
+import yfinance as yf
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 class NewsService:
-    """Complete news service with sentiment analysis"""
+    """Complete news service with real-time feeds, earnings calendar, economic calendar, and event detection"""
     
     def __init__(self):
         self.news_api_key = os.getenv("NEWS_API_KEY", "demo")
         self.fmp_api_key = os.getenv("FMP_API_KEY", "demo")
+        self.alpha_vantage_key = os.getenv("ALPHA_VANTAGE_API_KEY", "demo")
+        self.fred_api_key = os.getenv("FRED_API_KEY", "demo")
+        self.sec_api_key = os.getenv("SEC_API_KEY", "demo")
         self.session = None
         self.news_client = None
         
@@ -32,6 +37,397 @@ class NewsService:
         """Close aiohttp session"""
         if self.session:
             await self.session.close()
+    
+    # Real-time news feeds from multiple sources
+    async def get_bloomberg_news(self, limit: int = 20) -> List[Dict[str, Any]]:
+        """Get Bloomberg News feed"""
+        try:
+            session = await self._get_session()
+            url = "https://www.bloomberg.com/feed/podcast/etf-report.xml"
+            
+            async with session.get(url) as response:
+                if response.status == 200:
+                    content = await response.text()
+                    return self._parse_rss_feed(content, "Bloomberg", limit)
+            
+            return []
+            
+        except Exception as e:
+            logger.error(f"Bloomberg news fetch failed: {e}")
+            return []
+    
+    async def get_reuters_news(self, limit: int = 20) -> List[Dict[str, Any]]:
+        """Get Reuters news feed"""
+        try:
+            session = await self._get_session()
+            url = "https://feeds.reuters.com/reuters/businessNews"
+            
+            async with session.get(url) as response:
+                if response.status == 200:
+                    content = await response.text()
+                    return self._parse_rss_feed(content, "Reuters", limit)
+            
+            return []
+            
+        except Exception as e:
+            logger.error(f"Reuters news fetch failed: {e}")
+            return []
+    
+    async def get_dow_jones_news(self, limit: int = 20) -> List[Dict[str, Any]]:
+        """Get Dow Jones news feed"""
+        try:
+            session = await self._get_session()
+            url = "https://feeds.feedburner.com/djnews"
+            
+            async with session.get(url) as response:
+                if response.status == 200:
+                    content = await response.text()
+                    return self._parse_rss_feed(content, "Dow Jones", limit)
+            
+            return []
+            
+        except Exception as e:
+            logger.error(f"Dow Jones news fetch failed: {e}")
+            return []
+    
+    def _parse_rss_feed(self, content: str, source: str, limit: int) -> List[Dict[str, Any]]:
+        """Parse RSS feed content"""
+        try:
+            import xml.etree.ElementTree as ET
+            root = ET.fromstring(content)
+            
+            news_items = []
+            for item in root.findall('.//item')[:limit]:
+                title = item.find('title')
+                description = item.find('description')
+                link = item.find('link')
+                pub_date = item.find('pubDate')
+                
+                news_items.append({
+                    'title': title.text if title is not None else '',
+                    'description': description.text if description is not None else '',
+                    'url': link.text if link is not None else '',
+                    'source': source,
+                    'published_at': pub_date.text if pub_date is not None else '',
+                    'symbol': None
+                })
+            
+            return news_items
+            
+        except Exception as e:
+            logger.error(f"RSS parsing failed: {e}")
+            return []
+    
+    # Earnings Calendar
+    async def get_earnings_calendar(self, start_date: str = None, end_date: str = None) -> List[Dict[str, Any]]:
+        """Get comprehensive earnings calendar with estimates and actual results"""
+        try:
+            if self.fmp_api_key != "demo":
+                return await self._get_fmp_earnings_calendar(start_date, end_date)
+            else:
+                return await self._get_yahoo_earnings_calendar(start_date, end_date)
+                
+        except Exception as e:
+            logger.error(f"Earnings calendar fetch failed: {e}")
+            return []
+    
+    async def _get_fmp_earnings_calendar(self, start_date: str, end_date: str) -> List[Dict[str, Any]]:
+        """Get earnings calendar from FMP"""
+        try:
+            session = await self._get_session()
+            url = "https://financialmodelingprep.com/api/v3/earning_calendar"
+            params = {
+                'apikey': self.fmp_api_key
+            }
+            
+            if start_date:
+                params['from'] = start_date
+            if end_date:
+                params['to'] = end_date
+            
+            async with session.get(url, params=params) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    earnings = []
+                    for item in data:
+                        earnings.append({
+                            'symbol': item.get('symbol'),
+                            'company_name': item.get('companyName'),
+                            'date': item.get('date'),
+                            'time': item.get('time'),
+                            'estimate_eps': item.get('epsEstimate'),
+                            'actual_eps': item.get('epsActual'),
+                            'estimate_revenue': item.get('revenueEstimate'),
+                            'actual_revenue': item.get('revenueActual'),
+                            'surprise_percent': item.get('surprisePercent')
+                        })
+                    
+                    return earnings
+            
+            return []
+            
+        except Exception as e:
+            logger.error(f"FMP earnings calendar failed: {e}")
+            return []
+    
+    async def _get_yahoo_earnings_calendar(self, start_date: str, end_date: str) -> List[Dict[str, Any]]:
+        """Get earnings calendar from Yahoo Finance"""
+        try:
+            symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX']
+            earnings = []
+            
+            for symbol in symbols:
+                try:
+                    ticker = yf.Ticker(symbol)
+                    calendar = ticker.calendar
+                    
+                    if calendar is not None and not calendar.empty:
+                        for _, row in calendar.iterrows():
+                            earnings.append({
+                                'symbol': symbol,
+                                'company_name': ticker.info.get('longName', symbol),
+                                'date': row.name.strftime('%Y-%m-%d'),
+                                'time': 'AMC',
+                                'estimate_eps': row.get('Earnings Average', 0),
+                                'actual_eps': None,
+                                'estimate_revenue': row.get('Revenue Average', 0),
+                                'actual_revenue': None,
+                                'surprise_percent': None
+                            })
+                except Exception as e:
+                    logger.warning(f"Yahoo earnings for {symbol} failed: {e}")
+                    continue
+            
+            return earnings
+            
+        except Exception as e:
+            logger.error(f"Yahoo earnings calendar failed: {e}")
+            return []
+    
+    # Economic Calendar
+    async def get_economic_calendar(self, start_date: str = None, end_date: str = None) -> List[Dict[str, Any]]:
+        """Get economic calendar with central bank decisions, economic releases, policy announcements"""
+        try:
+            if self.fred_api_key != "demo":
+                return await self._get_fred_economic_calendar(start_date, end_date)
+            else:
+                return await self._get_alpha_vantage_economic_calendar(start_date, end_date)
+                
+        except Exception as e:
+            logger.error(f"Economic calendar fetch failed: {e}")
+            return []
+    
+    async def _get_fred_economic_calendar(self, start_date: str, end_date: str) -> List[Dict[str, Any]]:
+        """Get economic calendar from FRED"""
+        try:
+            session = await self._get_session()
+            url = "https://api.stlouisfed.org/fred/series/search"
+            params = {
+                'api_key': self.fred_api_key,
+                'search_text': 'GDP CPI employment unemployment',
+                'file_type': 'json'
+            }
+            
+            async with session.get(url, params=params) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    economic_events = []
+                    for series in data.get('seriess', [])[:20]:
+                        economic_events.append({
+                            'indicator': series.get('title'),
+                            'frequency': series.get('frequency'),
+                            'units': series.get('units'),
+                            'last_updated': series.get('last_updated'),
+                            'observation_start': series.get('observation_start'),
+                            'observation_end': series.get('observation_end'),
+                            'notes': series.get('notes')
+                        })
+                    
+                    return economic_events
+            
+            return []
+            
+        except Exception as e:
+            logger.error(f"FRED economic calendar failed: {e}")
+            return []
+    
+    async def _get_alpha_vantage_economic_calendar(self, start_date: str, end_date: str) -> List[Dict[str, Any]]:
+        """Get economic calendar from Alpha Vantage"""
+        try:
+            if self.alpha_vantage_key == "demo":
+                return []
+                
+            session = await self._get_session()
+            url = "https://www.alphavantage.co/query"
+            params = {
+                'function': 'ECONOMIC_CALENDAR',
+                'apikey': self.alpha_vantage_key
+            }
+            
+            async with session.get(url, params=params) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    economic_events = []
+                    for event in data.get('economic_calendar', []):
+                        economic_events.append({
+                            'indicator': event.get('event'),
+                            'currency': event.get('currency'),
+                            'impact': event.get('impact'),
+                            'actual': event.get('actual'),
+                            'forecast': event.get('forecast'),
+                            'previous': event.get('previous'),
+                            'date': event.get('date'),
+                            'time': event.get('time')
+                        })
+                    
+                    return economic_events
+            
+            return []
+            
+        except Exception as e:
+            logger.error(f"Alpha Vantage economic calendar failed: {e}")
+            return []
+    
+    # Corporate Actions
+    async def get_corporate_actions(self, symbol: str = None) -> List[Dict[str, Any]]:
+        """Get corporate actions: dividends, splits, mergers, spin-offs, rights offerings"""
+        try:
+            if symbol:
+                return await self._get_symbol_corporate_actions(symbol)
+            else:
+                return await self._get_market_corporate_actions()
+                
+        except Exception as e:
+            logger.error(f"Corporate actions fetch failed: {e}")
+            return []
+    
+    async def _get_symbol_corporate_actions(self, symbol: str) -> List[Dict[str, Any]]:
+        """Get corporate actions for specific symbol"""
+        try:
+            ticker = yf.Ticker(symbol)
+            
+            corporate_actions = []
+            
+            # Get dividends
+            dividends = ticker.dividends
+            if dividends is not None and not dividends.empty:
+                for date, amount in dividends.tail(10).items():
+                    corporate_actions.append({
+                        'symbol': symbol,
+                        'action_type': 'dividend',
+                        'date': date.strftime('%Y-%m-%d'),
+                        'amount': amount,
+                        'description': f'Dividend payment of ${amount:.2f}'
+                    })
+            
+            # Get stock splits
+            splits = ticker.splits
+            if splits is not None and not splits.empty:
+                for date, ratio in splits.tail(5).items():
+                    corporate_actions.append({
+                        'symbol': symbol,
+                        'action_type': 'split',
+                        'date': date.strftime('%Y-%m-%d'),
+                        'amount': ratio,
+                        'description': f'Stock split {ratio}:1'
+                    })
+            
+            return corporate_actions
+            
+        except Exception as e:
+            logger.error(f"Symbol corporate actions failed for {symbol}: {e}")
+            return []
+    
+    async def _get_market_corporate_actions(self) -> List[Dict[str, Any]]:
+        """Get market-wide corporate actions"""
+        try:
+            symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX']
+            all_actions = []
+            
+            for symbol in symbols:
+                actions = await self._get_symbol_corporate_actions(symbol)
+                all_actions.extend(actions)
+            
+            return all_actions
+            
+        except Exception as e:
+            logger.error(f"Market corporate actions failed: {e}")
+            return []
+    
+    # Event Detection
+    async def detect_market_events(self, symbols: List[str] = None) -> List[Dict[str, Any]]:
+        """Automated identification of market-moving events and anomalies"""
+        try:
+            events = []
+            
+            if symbols is None:
+                symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX']
+            
+            for symbol in symbols:
+                try:
+                    # Get recent news and price data
+                    news = await self.get_symbol_news(symbol, 10)
+                    ticker = yf.Ticker(symbol)
+                    hist = ticker.history(period="5d")
+                    
+                    if not hist.empty:
+                        # Detect price anomalies
+                        current_price = hist['Close'].iloc[-1]
+                        avg_price = hist['Close'].mean()
+                        price_change = (current_price - avg_price) / avg_price
+                        
+                        if abs(price_change) > 0.05:  # 5% price movement
+                            events.append({
+                                'symbol': symbol,
+                                'event_type': 'price_anomaly',
+                                'severity': 'high' if abs(price_change) > 0.1 else 'medium',
+                                'description': f'{symbol} price moved {price_change:.2%} from average',
+                                'timestamp': datetime.now().isoformat(),
+                                'price_change': price_change
+                            })
+                        
+                        # Detect volume anomalies
+                        current_volume = hist['Volume'].iloc[-1]
+                        avg_volume = hist['Volume'].mean()
+                        volume_change = (current_volume - avg_volume) / avg_volume
+                        
+                        if volume_change > 2:  # 200% volume increase
+                            events.append({
+                                'symbol': symbol,
+                                'event_type': 'volume_anomaly',
+                                'severity': 'high' if volume_change > 5 else 'medium',
+                                'description': f'{symbol} volume increased {volume_change:.0%}',
+                                'timestamp': datetime.now().isoformat(),
+                                'volume_change': volume_change
+                            })
+                    
+                    # Detect news sentiment anomalies
+                    if news:
+                        sentiment_scores = [article.get('sentiment_score', 0) for article in news]
+                        avg_sentiment = sum(sentiment_scores) / len(sentiment_scores)
+                        
+                        if abs(avg_sentiment) > 0.3:  # Strong sentiment
+                            events.append({
+                                'symbol': symbol,
+                                'event_type': 'sentiment_anomaly',
+                                'severity': 'high' if abs(avg_sentiment) > 0.5 else 'medium',
+                                'description': f'{symbol} has strong {"positive" if avg_sentiment > 0 else "negative"} sentiment',
+                                'timestamp': datetime.now().isoformat(),
+                                'sentiment_score': avg_sentiment
+                            })
+                
+                except Exception as e:
+                    logger.warning(f"Event detection failed for {symbol}: {e}")
+                    continue
+            
+            return events
+            
+        except Exception as e:
+            logger.error(f"Market event detection failed: {e}")
+            return []
     
     async def get_market_news(self, limit: int = 50) -> List[Dict[str, Any]]:
         """Get general market news with sentiment analysis"""
