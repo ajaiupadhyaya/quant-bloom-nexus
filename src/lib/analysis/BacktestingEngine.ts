@@ -167,11 +167,25 @@ export class BacktestingEngine {
     this.tradeId = 0;
   }
 
-  private recordEquity(data: HistoricalDataPoint): void {
-    const positionValue = this.position * data.close;
+  private updatePositions(data: HistoricalDataPoint): void {
+    // Update all positions with current market data if they exist
+    this.positions.forEach((position) => {
+      position.currentPrice = data.close;
+      position.unrealizedPnL = (data.close - position.averagePrice) * position.quantity;
+      position.marketValue = data.close * position.quantity;
+    });
+  }
+
+  private recordEquity(timestamp: number): void {
+    // Calculate total portfolio value
+    let totalPositionValue = 0;
+    this.positions.forEach(position => {
+      totalPositionValue += position.marketValue;
+    });
+    
     this.equity.push({
-      timestamp: data.timestamp,
-      value: this.currentCapital + positionValue
+      timestamp,
+      value: this.currentCapital + totalPositionValue
     });
   }
 

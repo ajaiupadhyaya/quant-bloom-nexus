@@ -148,6 +148,7 @@ export class AIEngineService extends (EventEmitter as any) {
       direction: 'up',
       strength: 0.8,
       timeframe: '1h',
+      features_used: ['price', 'volume', 'rsi', 'macd'],
       model_version: '1.0.0'
     }];
   }
@@ -159,6 +160,7 @@ export class AIEngineService extends (EventEmitter as any) {
       overall_sentiment: 0.3,
       news_sentiment: 0.2,
       social_sentiment: 0.4,
+      analyst_sentiment: 0.3,
       sentiment_trend: 'improving',
       key_themes: ['earnings', 'growth'],
       risk_factors: ['competition']
@@ -177,7 +179,9 @@ export class AIEngineService extends (EventEmitter as any) {
       target_price: currentPrice * 1.02,
       stop_loss: currentPrice * 0.98,
       risk_reward_ratio: 2.0,
-      conviction: 0.8
+      conviction: 0.8,
+      model_ensemble: ['lstm', 'transformer', 'random_forest'],
+      features: { rsi: 65, macd: 0.5, volume_ratio: 1.2, momentum: 0.3 }
     };
   }
 

@@ -361,7 +361,7 @@ export class OrderManagementSystem extends (EventEmitter as any) {
         return { success: false, error: 'Order not found' };
       }
 
-      if (order.status !== 'pending' && order.status !== 'partially_filled') {
+      if (order.status !== 'pending') {
         return { success: false, error: `Cannot modify order in ${order.status} status` };
       }
 
@@ -392,7 +392,7 @@ export class OrderManagementSystem extends (EventEmitter as any) {
 
   public getActiveOrders(): SmartOrder[] {
     return Array.from(this.orders.values()).filter(order => 
-      order.status === 'pending' || order.status === 'partially_filled'
+      order.status === 'pending'
     );
   }
 
@@ -600,7 +600,7 @@ export class OrderManagementSystem extends (EventEmitter as any) {
     // Update order
     order.executedQuantity += quantity;
     order.avgExecutionPrice = execution.avgPrice;
-    order.status = execution.orderStatus;
+    order.status = order.executedQuantity >= order.quantity ? 'filled' : 'pending';
     order.commissions += execution.commissions;
     order.fees += execution.fees;
     order.lastModified = Date.now();

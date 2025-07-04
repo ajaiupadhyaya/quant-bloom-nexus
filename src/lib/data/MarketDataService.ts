@@ -418,7 +418,7 @@ export class MarketDataService extends (EventEmitter as any) {
       .slice(0, limit);
   }
 
-  public async getHistoricalData(
+  public async getHistoricalMarketData(
     symbol: string, 
     period: string = '1D',
     interval: string = '1m'
@@ -538,7 +538,7 @@ export class MarketDataService extends (EventEmitter as any) {
   }
 
   // Market Data Methods
-  async getQuote(symbol: string): Promise<Quote> {
+  async getQuoteData(symbol: string): Promise<Quote> {
     const cacheKey = this.getCacheKey('quote', { symbol });
     const cached = this.getFromCache<Quote>(cacheKey);
     if (cached) return cached;
@@ -554,7 +554,7 @@ export class MarketDataService extends (EventEmitter as any) {
     }
   }
 
-  async getHistoricalData(
+  async getHistoricalDataService(
     symbol: string,
     period: string = '1y',
     interval: string = '1d'
